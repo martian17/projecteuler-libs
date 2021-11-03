@@ -230,7 +230,7 @@ let isPrime = (function(){
 
 
 //adaptive isprime function
-let isPrime = (function(){
+let isPrime_old = (function(){
     let primeTable = [false,false,true];
     let primes = [2];
     return function(n){
@@ -238,35 +238,6 @@ let isPrime = (function(){
             return primeTable[n];
         }
         
-        //contingency: square root loop
-        let tail = primes[primes.lengt-1];
-        if(tail*tail > n){//can use the loop test
-            //calculate until the sqrt
-            let sqrt = Math.floor(Math.sqrt(n));
-            for(let i = 1; i <= sqrt; i++){
-                let prime = primes[j];
-                if((i/prime)%1 === 0){
-                    primeFlag = false;
-                    break;
-                }
-                if(prime >= sqrt){
-                    break;
-                }
-            }
-        }
-        for(let i = 0; i < primes.length; i++){
-            let prime = primes[i];
-            if((n/prime)%1 === 0){
-                return false;
-            }
-            if(prime*prime > n){
-                break;
-            }
-        }
-        return true;
-        
-        //old code: kinda brute force, but efficient with many hits
-        /*
         for(let i = primeTable.length; i <= n; i++){
             let sqrt = Math.ceil(Math.sqrt(n));
             let primeFlag = true;
@@ -286,7 +257,6 @@ let isPrime = (function(){
             primeTable[i] = primeFlag;
         }
         return primeTable[n];
-        */
     };
 }());
 
