@@ -179,6 +179,56 @@ let gcd = function(a,b){
     return a;
 };
 
+
+
+//efficeint version  fo prime function
+let isPrime = (function(){
+    let primeTable = [false,false,true];
+    let primes = [2];
+    return function(n){
+        if(n < primeTable.length){
+            return primeTable[n];
+        }
+        
+        //contingency: square root loop
+        let tail = primes[primes.length - 1];
+        let sqrt = Math.floor(Math.sqrt(n));
+        if(n > tail*tail){//need to find more primes
+            for(let i = primeTable.length; i < sqrt; i++){
+                let primeFlag = true;
+                let isqrt = Math.floor(Math.sqrt(n));
+                for(let j = 0; j < primes.length; j++){
+                    let prime = primes[j];
+                    if(prime > isqrt){
+                        break;
+                    }
+                    if((i/prime)%1 === 0){//i is not prime
+                        primeFlag = false;
+                        break;
+                    }
+                }
+                if(primeFlag){
+                    primes.push(i);
+                }
+                primeTable.push(primeFlag);
+            }
+        }
+        
+        //square root test
+        for(let i = 0; i < primes.length; i++){
+            let prime = primes[i];
+            if(prime > sqrt){
+                return true;
+            }
+            if((n/prime)%1 === 0){//not prime
+                return false;
+            }
+        }
+        return false;
+    }
+}());
+
+
 //adaptive isprime function
 let isPrime = (function(){
     let primeTable = [false,false,true];
