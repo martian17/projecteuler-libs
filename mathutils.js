@@ -4,6 +4,8 @@
    |-unique(arr);               | arr
    |-arreq(arr1,arr2);          | bool
    |-rotr(arr);                 | arr
+   |-concat_destroy(arr1,arr2); | none
+   |-splice(arr,n);             | arr
    
  * mapper, reducer
    |-mapper{}
@@ -26,6 +28,8 @@
  * Math functions
    |-gcd(a,b);                  | n
    |-isPrime(n);                | bool
+   |-isPrime_conseq(n);         | bool
+   |-primeFactor(n);            | arr
    |-fact(n);                   | n
  */
 
@@ -59,6 +63,18 @@ let arreq = function(a1,a2){
 
 let rotr = function(arr){
     return [arr.pop(),...arr];
+};
+
+let concat_destroy = function(a1,a2){
+    for(let i = 0; i < a2.length; i++){
+        a1.push(a2[i]);
+    }
+};
+
+let splice = function(arr,i){
+    arr = [...arr];//clone
+    arr.splice(i,1);
+    return arr;
 };
 
 
@@ -180,85 +196,132 @@ let gcd = function(a,b){
 };
 
 
+//tables, used by a lot of functions
+let primeTable = [false,false,true];
+let primes = [2];
 
-//efficeint version  fo prime function
-let isPrime = (function(){
-    let primeTable = [false,false,true];
-    let primes = [2];
-    return function(n){
-        if(n < primeTable.length){
-            return primeTable[n];
-        }
-        
-        //contingency: square root loop
-        let tail = primes[primes.length - 1];
-        let sqrt = Math.floor(Math.sqrt(n));
-        if(n > tail*tail){//need to find more primes
-            for(let i = primeTable.length; i < sqrt; i++){
-                let primeFlag = true;
-                let isqrt = Math.floor(Math.sqrt(n));
-                for(let j = 0; j < primes.length; j++){
-                    let prime = primes[j];
-                    if(prime > isqrt){
-                        break;
-                    }
-                    if((i/prime)%1 === 0){//i is not prime
-                        primeFlag = false;
-                        break;
-                    }
-                }
-                if(primeFlag){
-                    primes.push(i);
-                }
-                primeTable.push(primeFlag);
-            }
-        }
-        
-        //square root test
-        for(let i = 0; i < primes.length; i++){
-            let prime = primes[i];
-            if(prime > sqrt){
-                return true;
-            }
-            if((n/prime)%1 === 0){//not prime
-                return false;
-            }
-        }
-        return false;
+//efficeint version of prime function
+let isPrime = function(n){
+    if(n < primeTable.length){
+        return primeTable[n];
     }
-}());
-
-
-//adaptive isprime function
-let isPrime_old = (function(){
-    let primeTable = [false,false,true];
-    let primes = [2];
-    return function(n){
-        if(n < primeTable.length){
-            return primeTable[n];
+    
+    //contingency: square root loop
+    let originalLength = primes.length;
+    let tail = primes[originalLength - 1];
+    let sqrt = Math.floor(Math.sqrt(n));
+    
+    //common case fast, check the existing list first
+    for(let i = 0; i < primes.length; i++){
+        let prime = primes[i];
+        if(prime > sqrt){
+            return true;
         }
-        
-        for(let i = primeTable.length; i <= n; i++){
-            let sqrt = Math.ceil(Math.sqrt(n));
+        if((n/prime)%1 === 0){//not prime
+            return false;
+        }
+    }
+    
+    
+    if(n > tail*tail){//need to find more primes
+        for(let i = primeTable.length; i <= sqrt; i++){
             let primeFlag = true;
+            let isqrt = Math.floor(Math.sqrt(n));
             for(let j = 0; j < primes.length; j++){
                 let prime = primes[j];
-                if((i/prime)%1 === 0){
-                    primeFlag = false;
+                if(prime > isqrt){
                     break;
                 }
-                if(prime >= sqrt){
+                if((i/prime)%1 === 0){//i is not prime
+                    primeFlag = false;
                     break;
                 }
             }
             if(primeFlag){
                 primes.push(i);
             }
-            primeTable[i] = primeFlag;
+            primeTable.push(primeFlag);
         }
+    }
+    
+    //console.log(primes);
+    //console.log(primeTable);
+    //console.log(sqrt);
+    //square root test
+    for(let i = originalLength; i < primes.length; i++){
+        let prime = primes[i];
+        if(prime > sqrt){
+            return true;
+        }
+        if((n/prime)%1 === 0){//not prime
+            return false;
+        }
+    }
+    return true;
+};
+
+
+//adaptive isprime function
+let isPrime_conseq = function(n){
+    if(n < primeTable.length){
         return primeTable[n];
-    };
-}());
+    }
+    
+    for(let i = primeTable.length; i <= n; i++){
+        let sqrt = Math.ceil(Math.sqrt(n));
+        let primeFlag = true;
+        for(let j = 0; j < primes.length; j++){
+            let prime = primes[j];
+            if((i/prime)%1 === 0){
+                primeFlag = false;
+                break;
+            }
+            if(prime >= sqrt){
+                break;
+            }
+        }
+        if(primeFlag){
+            primes.push(i);
+        }
+        primeTable[i] = primeFlag;
+    }
+    return primeTable[n];
+};
+
+let primeFactor = function(n){
+    if(n < 2)return [];
+    let sqrt = Math.sqrt(n);
+    let factors = [];
+    for(let i = 0; i < primes.length; i++){
+        let prime = primes[i];
+        if(prime > sqrt){
+            //console.log(primes[i],n);
+            //n is probably a prime, add to factors
+            factors.push(n);
+            return factors;
+        }
+        while((n/prime)%1 === 0){
+            factors.push(prime);
+            n /= prime;
+            let sqrt = Math.sqrt(n);
+        }
+        if(n === 1)return factors;
+    }
+    for(let i = primes[primes.length-1]+1; i <= sqrt; i++){
+        if(isPrime_conseq(i)){
+            let prime = i;
+            while((n/prime)%1 === 0){
+                factors.push(prime);
+                n /= prime;
+                let sqrt = Math.sqrt(n);
+            }
+            if(n === 1)return factors;
+        }
+    }
+    //console.log(sqrt,n);
+    factors.push(n);
+    return factors;
+};
 
 
 let fact = function(n){//factorial
@@ -275,6 +338,8 @@ module.exports = {
     unique,
     arreq,
     rotr,
+    concat_destroy,
+    splice,
     
     //* mapper, reducer
     mapper,
@@ -294,7 +359,13 @@ module.exports = {
     //* Math functions
     gcd,
     isPrime,
-    fact
+    isPrime_conseq,
+    primeFactor,
+    fact,
+    
+    //* internal values
+    primeTable,
+    primes
 };
 
 
