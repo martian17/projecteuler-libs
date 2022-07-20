@@ -6,6 +6,8 @@
    |-rotr(arr);                 | arr
    |-concat_destroy(arr1,arr2); | none
    |-splice(arr,n);             | arr
+   |-bytesToString(arr)         | str
+   |-stringToBytes(str)         | arr
    
  * mapper, reducer
    |-mapper{}
@@ -75,6 +77,18 @@ let splice = function(arr,i){
     arr = [...arr];//clone
     arr.splice(i,1);
     return arr;
+};
+
+let bytesToString = function(arr){
+    return String.fromCharCode(...arr);
+};
+
+let stringToBytes = function(s){
+    let result = [];
+    for(let i = 0; i < s.length; i++){
+        result.push(s.charCodeAt(i));
+    }
+    return result;
 };
 
 
@@ -340,6 +354,8 @@ module.exports = {
     rotr,
     concat_destroy,
     splice,
+    bytesToString,
+    stringToBytes,
     
     //* mapper, reducer
     mapper,
